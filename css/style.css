@@ -1,0 +1,73 @@
+html {
+  box-sizing: border-box;
+  font-size: 62.5%; /* 1 rem = 10px */
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+body {
+  background-color: #dddddd;
+  margin: 24px;
+}
+
+.timer {
+  font-family: sans-serif;
+  display: inline-block;
+  padding: 24px 32px;
+  border-radius: 30px;
+  background: #ffffff;
+}
+
+.timer__container {
+  display: block;
+  border: 1px solid black;
+  margin: 10px;
+  padding: 10px;
+}
+
+.timer__container.sound{
+  background-color: #02afff;
+}
+
+.timer__part {
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.timer__part--label {
+  margin-right: 10px;
+  padding: 10px;
+}
+
+.timer__part--minutes, .timer__part--seconds {
+  width: 50px;
+  height: 50px;
+  font-size: 18px;
+  border: 1px solid black;
+  color: #000;
+  text-align: center;
+}
+
+.timer__btn {
+  width: 50px;
+  height: 50px;
+  margin-left: 16px;
+  border-radius: 50%;
+  border: none;
+  color: #fff;
+  background-color: #8208e6;
+  cursor: pointer;
+}
+
+.timer__btn--reset {
+  background-color: #8208e6;
+  
+}
+.timer__btn--start {
+  background-color: #00b84c;
+  
+}
+.timer__btn--stop {
+  background-color: #ff0256;
+}
