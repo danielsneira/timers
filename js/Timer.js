@@ -98,7 +98,7 @@ export default class Timer {
 	}
 
 	start() {
-		if (this.remainingSeconds === 0) return;
+		if (this.remainingSeconds === 0 || this.interval !== null) return;
 
 		this.interval = setInterval(() => {
 			this.remainingSeconds--;
