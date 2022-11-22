@@ -1,6 +1,8 @@
 export default class Timer {
 	constructor(label, minutes) {
 		this.interval = null;
+		this.popUp = null;
+		this.input = null;
 		this.label = label;
 		this.minutes = minutes;
 		this.remainingSeconds = minutes * 60;
@@ -92,7 +94,7 @@ export default class Timer {
 			minutes: this.container.querySelector(".timer__part--minutes"),
 			seconds: this.container.querySelector(".timer__part--seconds"),
 		};
-
+		// sets timer with two digits
 		el.minutes.textContent = minutes.toString().padStart(2, "0");
 		el.seconds.textContent = seconds.toString().padStart(2, "0");
 	}
@@ -106,38 +108,88 @@ export default class Timer {
 
 			if (this.remainingSeconds === 0) {
 				this.playSound();
+				let template = document.createElement('template');
+				let popUpHTML = this.getPopUp(this.label);
+				let mainContainer = document.getElementById("main");
+				popUpHTML = popUpHTML.trim();
+				template.innerHTML = popUpHTML;
+				mainContainer.appendChild(template.content.firstChild);
+				this.popUp = mainContainer.querySelector(`#popup-${this.label}`);
+				let stopButton = this.popUp.querySelector(".popup__btn");
+				stopButton.addEventListener("click", () => {
+					this.popUp.remove();
+					this.stop();
+				});
 			}
 		}, 1000);
 	}
 
 	reset() {
-		let inputMinutes = prompt("Enter number of minutes: ");
-		let inputSeconds = prompt("Enter number of seconds: ");
-
-		if (inputMinutes < 99) {
-			this.stop();
-			this.remainingSeconds =
-				parseInt(inputMinutes * 60) + parseInt(inputSeconds);
-			this.updateInterfaceTime();
-		}
+		let input = document.querySelector(".set-timer");
+		if (input) return;
+		let template = document.createElement("template");
+		this.input = this.getInput(this.label);
+		let mainContainer = document.getElementById("main");
+		this.input = this.input.trim();
+		template.innerHTML = this.input;
+		mainContainer.appendChild(template.content.firstChild);
+		this.input = mainContainer.querySelector(".set-timer");
+		let setButton = mainContainer.querySelector(".set-timer__btn");
+		setButton.addEventListener("click", () => {
+			let inputMinutes = this.input.querySelector(".set-timer__input--minutes").value;
+			let inputSeconds = this.input.querySelector(".set-timer__input--seconds").value;
+			if (!inputMinutes || !inputSeconds) return;
+			if (inputMinutes == 0 && inputSeconds == 0) return;
+			if (inputMinutes < 99) {
+				this.stop();
+				this.remainingSeconds =
+					parseInt(inputMinutes * 60) + parseInt(inputSeconds);
+				this.updateInterfaceTime();
+			}
+			this.input.remove();
+		});
 	}
 
 	stop() {
 		clearInterval(this.interval);
 		this.interval = null;
 		this.audio.pause();
-		this.container.classList.remove("sound")
+		this.container.classList.remove("sound");
 	}
 
 	playSound() {
 		clearInterval(this.interval);
 		this.interval = setInterval(() => {
 			this.audio.play();
-			this.container.classList.toggle("sound")
+			this.container.classList.toggle("sound");
 		}, 1000);
 	}
 
 	getHTML() {
 		return this.container;
+	}
+
+	getPopUp(label) {
+		return `
+    <div class="popup" id="popup-${label}">
+      <p class="popup__title">Timer ${label} up!</p>
+      <button class="popup__btn">stop</button>
+    </div>
+    `;
+	}
+
+	getInput(label) {
+		return `
+		<div class="popup set-timer">
+      <p class="set-timer__title">Set timer ${label}</p>
+			<form class="set-timer__form grid">
+      <label class="set-timer__label set-timer__label--minutes" >minutes: </label>
+      <input class="set-timer__input set-timer__input--minutes" type="number" />
+      <label class="set-timer__label set-timer__label--seconds" >seconds: </label>
+      <input class="set-timer__input set-timer__input--seconds" type="number" />
+			</form>
+      <button class="set-timer__btn">Set</button>
+    </div>
+		`;
 	}
 }

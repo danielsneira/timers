@@ -31,6 +31,11 @@ const timers = [
 		minutes: 5,
 		seconds: 0,
 	},
+	{
+		label: "G",
+		minutes: 2,
+		seconds: 0,
+	},
 ];
 
 timers.forEach((data) => {
