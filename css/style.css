@@ -13,6 +13,10 @@ body {
 	margin: 2rem;
 }
 
+div#main {
+	min-width: 280px;
+}
+
 .timer {
 	font-family: sans-serif;
 	display: inline-block;

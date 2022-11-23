@@ -1,3 +1,7 @@
+const CLASS_TIME_BUTTON_START = 'timer__btn--start';
+const CLASS_TIME_BUTTON_RESET = 'timer__btn--reset';
+const CLASS_TIME_BUTTON_STOP = 'timer__btn--stop';
+
 export default class Timer {
 	constructor(label, minutes) {
 		this.interval = null;
@@ -6,83 +10,41 @@ export default class Timer {
 		this.label = label;
 		this.minutes = minutes;
 		this.remainingSeconds = minutes * 60;
-		this.container = document.createElement("div");
 		this.audio = new Audio("../assets/audio/beep.mp3");
 
-		// Create html elements from JS
-		let labelContainer = document.createElement("span");
-		let minutesContainer = document.createElement("span");
-		let seconds = document.createElement("span");
-		let separator = document.createElement("span");
-		let reset = document.createElement("button");
-		let stop = document.createElement("button");
-		let start = document.createElement("button");
-		let startSpan = document.createElement("span");
-		let resetSpan = document.createElement("span");
-		let stopSpan = document.createElement("span");
-
-		// Adding CSS classes
-		this.container.classList.add("timer", "timer__container");
-		this.container.id = label;
-		labelContainer.classList.add("timer__part", "timer__part--label");
-		minutesContainer.classList.add("timer__part", "timer__part--minutes");
-		seconds.classList.add("timer__part", "timer__part--seconds");
-		separator.classList.add("timer__part");
-		reset.classList.add(
-			"timer__btn",
-			"timer__btn--control",
-			"timer__btn--reset"
-		);
-		stop.classList.add("timer__btn", "timer__btn--control", "timer__btn--stop");
-		start.classList.add(
-			"timer__btn",
-			"timer__btn--control",
-			"timer__btn--start"
-		);
-		startSpan.classList.add("material-icons");
-		resetSpan.classList.add("material-icons");
-		stopSpan.classList.add("material-icons");
-
-		// Inner text of HTML elements
-		labelContainer.innerText = label;
-		minutesContainer.textContent = minutes;
-		seconds.textContent = 0;
-		separator.innerHTML = ":";
-		startSpan.innerText = "play_arrow";
-		resetSpan.innerText = "restart_alt";
-		stopSpan.innerText = "pause";
-
-		// Adding elements to containers
-		reset.appendChild(resetSpan);
-		stop.appendChild(stopSpan);
-		start.appendChild(startSpan);
-		this.container.appendChild(labelContainer);
-		this.container.appendChild(minutesContainer);
-		this.container.appendChild(separator);
-		this.container.appendChild(seconds);
-		this.container.appendChild(reset);
-		this.container.appendChild(stop);
-		this.container.appendChild(start);
-
-		// Fix interface to see two digits in minutes and seconds
+		this.createView(label, minutes)
 		this.updateInterfaceTime();
-
-		// Adds events to buttons
-		this.init();
+		this.addListeners();
 	}
 
-	init() {
-		let el = {
-			start: this.container.querySelector(".timer__btn--start"),
-			reset: this.container.querySelector(".timer__btn--reset"),
-			stop: this.container.querySelector(".timer__btn--stop"),
-		};
-
-		el.start.addEventListener("click", () => this.start());
-		el.reset.addEventListener("click", () => this.reset());
-		el.stop.addEventListener("click", () => this.stop());
+	createView(label, minutes) {
+		this.container = document.createElement("div");
+		this.container.id = label;
+		this.container.classList.add("timer", "timer__container");
+		this.container.innerHTML = `
+			<span class="timer__part timer__part--label">${label}</span>
+			<span class="timer__part timer__part--minutes">${minutes}</span>
+			<span class="timer__part">:</span>
+			<span class="timer__part timer__part--seconds">00</span>
+			<button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_RESET}">
+				<span class="material-icons">restart_alt</span>
+			</button>
+			<button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_STOP}">
+				<span class="material-icons">pause</span>
+			</button>
+			<button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_START}">
+				<span class="material-icons">play_arrow</span>
+			</button>
+		`;
 	}
 
+	getElementByClass(className) {
+		return this.container.querySelector("."+ className)
+	}
+
+	/**
+	 * Update time and fix interface to see two digits in minutes and seconds
+	 */
 	updateInterfaceTime() {
 		let minutes = Math.floor(this.remainingSeconds / 60);
 		let seconds = this.remainingSeconds % 60;
@@ -97,6 +59,18 @@ export default class Timer {
 		// sets timer with two digits
 		el.minutes.textContent = minutes.toString().padStart(2, "0");
 		el.seconds.textContent = seconds.toString().padStart(2, "0");
+	}
+
+	addListeners() {
+		let el = {
+			start: this.getElementByClass(CLASS_TIME_BUTTON_START),
+			reset: this.getElementByClass(CLASS_TIME_BUTTON_RESET),
+			stop: this.getElementByClass(CLASS_TIME_BUTTON_STOP),
+		};
+
+		el.start.addEventListener("click", () => this.start());
+		el.reset.addEventListener("click", () => this.reset());
+		el.stop.addEventListener("click", () => this.stop());
 	}
 
 	start() {
