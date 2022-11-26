@@ -1,6 +1,7 @@
-const CLASS_TIME_BUTTON_START = 'timer__btn--start';
-const CLASS_TIME_BUTTON_RESET = 'timer__btn--reset';
-const CLASS_TIME_BUTTON_STOP = 'timer__btn--stop';
+const CLASS_TIME_BUTTON_START = "timer__btn--start";
+const CLASS_TIME_BUTTON_RESET = "timer__btn--reset";
+const CLASS_TIME_BUTTON_STOP = "timer__btn--stop";
+const CLASS_TIME_BUTTON_SET = "timer__btn--set";
 
 export default class Timer {
 	constructor(label, minutes) {
@@ -12,7 +13,7 @@ export default class Timer {
 		this.remainingSeconds = minutes * 60;
 		this.audio = new Audio("../assets/audio/beep.mp3");
 
-		this.createView(label, minutes)
+		this.createView(label, minutes);
 		this.updateInterfaceTime();
 		this.addListeners();
 	}
@@ -22,15 +23,17 @@ export default class Timer {
 		this.container.id = label;
 		this.container.classList.add("timer", "timer__container");
 		this.container.innerHTML = `
-			<span class="timer__part timer__part--label">${label}</span>
-			<span class="timer__part timer__part--minutes">${minutes}</span>
-			<span class="timer__part">:</span>
-			<span class="timer__part timer__part--seconds">00</span>
+			<div class="timer__part timer__part__container">
+				<span class="timer__part timer__part--label">${label}</span>
+				<span class="timer__part timer__part--minutes">${minutes}</span>
+				<span class="timer__part">:</span>
+				<span class="timer__part timer__part--seconds">00</span>
+			</div>
 			<button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_RESET}">
 				<span class="material-icons">restart_alt</span>
 			</button>
-			<button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_STOP}">
-				<span class="material-icons">pause</span>
+			<button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_SET}">
+				<span class="material-icons">timer</span>
 			</button>
 			<button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_START}">
 				<span class="material-icons">play_arrow</span>
@@ -39,7 +42,7 @@ export default class Timer {
 	}
 
 	getElementByClass(className) {
-		return this.container.querySelector("."+ className)
+		return this.container.querySelector("." + className);
 	}
 
 	/**
@@ -65,42 +68,49 @@ export default class Timer {
 		let el = {
 			start: this.getElementByClass(CLASS_TIME_BUTTON_START),
 			reset: this.getElementByClass(CLASS_TIME_BUTTON_RESET),
-			stop: this.getElementByClass(CLASS_TIME_BUTTON_STOP),
+			set: this.getElementByClass(CLASS_TIME_BUTTON_SET),
 		};
 
 		el.start.addEventListener("click", () => this.start());
 		el.reset.addEventListener("click", () => this.reset());
-		el.stop.addEventListener("click", () => this.stop());
+		el.set.addEventListener("click", () => this.set());
 	}
 
 	start() {
 		if (this.remainingSeconds === 0 || this.interval !== null) return;
+		this.updateEvent("pause");
 
 		this.interval = setInterval(() => {
 			this.remainingSeconds--;
 			this.updateInterfaceTime();
 
 			if (this.remainingSeconds === 0) {
+				this.updateEvent("stop");
 				this.playSound();
-				let template = document.createElement('template');
-				let popUpHTML = this.getPopUp(this.label);
-				let mainContainer = document.getElementById("main");
-				popUpHTML = popUpHTML.trim();
-				template.innerHTML = popUpHTML;
-				mainContainer.appendChild(template.content.firstChild);
-				this.popUp = mainContainer.querySelector(`#popup-${this.label}`);
-				let stopButton = this.popUp.querySelector(".popup__btn");
-				stopButton.addEventListener("click", () => {
-					this.popUp.remove();
-					this.stop();
-				});
+				// let template = document.createElement("template");
+				// let popUpHTML = this.getPopUp(this.label);
+				// let mainContainer = document.getElementById("main");
+				// popUpHTML = popUpHTML.trim();
+				// template.innerHTML = popUpHTML;
+				// mainContainer.appendChild(template.content.firstChild);
+				// this.popUp = mainContainer.querySelector(`#popup-${this.label}`);
+				// let stopButton = this.popUp.querySelector(".popup__btn");
+				// stopButton.addEventListener("click", () => {
+				// 	this.popUp.remove();
+				// 	this.stop();
+				// });
 			}
 		}, 1000);
 	}
-
 	reset() {
+		this.remainingSeconds = this.minutes * 60;
+		this.updateInterfaceTime();
+	}
+
+	set() {
 		let input = document.querySelector(".set-timer");
 		if (input) return;
+
 		let template = document.createElement("template");
 		this.input = this.getInput(this.label);
 		let mainContainer = document.getElementById("main");
@@ -110,8 +120,12 @@ export default class Timer {
 		this.input = mainContainer.querySelector(".set-timer");
 		let setButton = mainContainer.querySelector(".set-timer__btn");
 		setButton.addEventListener("click", () => {
-			let inputMinutes = this.input.querySelector(".set-timer__input--minutes").value;
-			let inputSeconds = this.input.querySelector(".set-timer__input--seconds").value;
+			let inputMinutes = this.input.querySelector(
+				".set-timer__input--minutes"
+			).value;
+			let inputSeconds = this.input.querySelector(
+				".set-timer__input--seconds"
+			).value;
 			if (!inputMinutes || !inputSeconds) return;
 			if (inputMinutes == 0 && inputSeconds == 0) return;
 			if (inputMinutes < 99) {
@@ -129,6 +143,7 @@ export default class Timer {
 		this.interval = null;
 		this.audio.pause();
 		this.container.classList.remove("sound");
+		this.updateEvent("play");
 	}
 
 	playSound() {
@@ -137,6 +152,20 @@ export default class Timer {
 			this.audio.play();
 			this.container.classList.toggle("sound");
 		}, 1000);
+	}
+
+	updateEvent(event) {
+		let element = this.getElementByClass(CLASS_TIME_BUTTON_START);
+		let label = element.childNodes[1];
+		if (event === "play") {
+			element.addEventListener("click", () => this.start());
+			element.classList.remove(CLASS_TIME_BUTTON_STOP);
+			label.textContent = "play_arrow";
+		} else {
+			element.addEventListener("click", () => this.stop());
+			element.classList.add(CLASS_TIME_BUTTON_STOP);
+			label.textContent = event;
+		}
 	}
 
 	getHTML() {

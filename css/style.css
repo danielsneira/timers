@@ -1,3 +1,6 @@
+:root {
+	--var: #fff;
+}
 html {
 	box-sizing: border-box;
 	font-size: 62.5%; /* 1 rem = 10px */
@@ -7,16 +10,39 @@ html {
 *::after {
 	box-sizing: inherit;
 }
+[class*='btn'] {
+	width: 5rem;
+	height: 5rem;
+	margin-left: 16px;
+	border-radius: 50%;
+	border: none;
+	cursor: pointer;
+}
+[class*='btn']:hover {
+	filter: brightness(90%);
+}
 
 body {
 	background-color: #dddddd;
 	margin: 2rem;
 }
 
-div#main {
+#main {
 	min-width: 280px;
+	max-width: 120rem;
+	width: 90%;
+	margin: 0 auto;
 }
-
+#main::after {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: black;
+	z-index: 2;
+}
 .timer {
 	font-family: sans-serif;
 	display: inline-block;
@@ -24,13 +50,11 @@ div#main {
 	border-radius: 3rem;
 	background: #ffffff;
 }
-
 .timer__container {
-	display: block;
+	display: flex;
 	border: 1px solid black;
 	margin: 1rem auto;
 	padding: 1rem 3rem;
-  width: 80%;
 }
 @media (max-width: 768px) {
 	.timer__container {
@@ -43,7 +67,6 @@ div#main {
 .timer__container.sound {
 	background-color: #02afff;
 }
-
 .timer__part {
 	font-size: 3rem;
 	font-weight: bold;
@@ -53,7 +76,12 @@ div#main {
 		font-size: 2.4rem;
 	}
 }
-
+@media (max-width: 768px){
+	.timer__part__container {
+		display: flex;
+		align-items: center;
+	}
+}
 .timer__part--label {
 	margin-right: 1rem;
 	padding: 1rem;
@@ -75,18 +103,12 @@ div#main {
 		width: 3rem;
 		height: 3rem;
     font-size: 2rem;
-    padding: 0 .5rem;
+    padding: 0;
 	}
 }
 .timer__btn {
-	width: 5rem;
-	height: 5rem;
-	margin-left: 16px;
-	border-radius: 50%;
-	border: none;
 	color: #fff;
 	background-color: #8208e6;
-	cursor: pointer;
 }
 @media (max-width: 768px) {
 	.timer__btn {
@@ -94,6 +116,9 @@ div#main {
 		height: 4rem;
 		margin-left: 1rem;
 	}
+}
+.timer__btn:hover {
+	filter: brightness(90%);
 }
 .timer__btn--reset {
 	background-color: #8208e6;
@@ -103,6 +128,9 @@ div#main {
 }
 .timer__btn--stop {
 	background-color: #ff0256;
+}
+.timer__btn--set {
+	background-color: #002a79;
 }
 
 .popup {
@@ -114,7 +142,8 @@ div#main {
 	height: 10rem;
 	background-color: white;
 	margin: 5rem;
-	border: 1px solid black;
+	border-radius: .5rem;
+	box-shadow: 2px 2px rgba(0, 0, 0, .2);
 	position: absolute;
 	top: 0;
 	left: 30%;
@@ -134,11 +163,9 @@ div#main {
 .popup__btn,
 .set-timer__btn {
 	background-color: red;
-	color: white;
-	font-size: 14px;
+	color: #FFF;
+	font-size: 1.6rem;
 	border-radius: 5px;
-	border: none;
-	cursor: pointer;
 	width: 10rem;
 }
 
