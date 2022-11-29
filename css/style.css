@@ -172,6 +172,8 @@ body {
 .set-timer {
 	width: 20vw;
 	height: fit-content;
+	z-index: 3;
+	pointer-events: visible;
 }
 @media (max-width: 768px){
   .popup {
@@ -184,7 +186,7 @@ body {
   grid-template-columns: auto auto;
   gap: 1rem;
 }
-.set-timer__btn {
+.set-timer__btn--set {
 	background-color: #00b84c;
 	margin-block: 2rem;
 }
@@ -193,4 +195,15 @@ body {
 }
 .set-timer__input {
   width: 10rem;
+}
+.overlay {
+	position: fixed;
+	display: none;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	background-color: rgba(0, 0, 0, .5);
+	pointer-events: visiblePainted;
+	z-index: 2;
 }
