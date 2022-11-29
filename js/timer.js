@@ -2,15 +2,20 @@ const CLASS_TIME_BUTTON_START = "timer__btn--start";
 const CLASS_TIME_BUTTON_RESET = "timer__btn--reset";
 const CLASS_TIME_BUTTON_STOP = "timer__btn--stop";
 const CLASS_TIME_BUTTON_SET = "timer__btn--set";
+const MINUTES_TO_SECONDS = 60;
+const MILLISECONDS_TO_SECONDS = 1000;
+const TIMER_STOP = 0;
+const MIN_TIMER = 99;
 
 export default class Timer {
 	constructor(label, minutes) {
 		this.interval = null;
 		this.popUp = null;
 		this.input = null;
+		this.confirmWindow = null;
 		this.label = label;
 		this.minutes = minutes;
-		this.remainingSeconds = minutes * 60;
+		this.remainingSeconds = minutes * MINUTES_TO_SECONDS;
 		this.audio = new Audio("../assets/audio/beep.mp3");
 
 		this.createView(label, minutes);
@@ -49,10 +54,10 @@ export default class Timer {
 	 * Update time and fix interface to see two digits in minutes and seconds
 	 */
 	updateInterfaceTime() {
-		let minutes = Math.floor(this.remainingSeconds / 60);
-		let seconds = this.remainingSeconds % 60;
-		if (this.remainingSeconds < 0) {
-			minutes = Math.ceil(this.remainingSeconds / 60);
+		let minutes = Math.floor(this.remainingSeconds / MINUTES_TO_SECONDS);
+		let seconds = this.remainingSeconds % MINUTES_TO_SECONDS;
+		if (this.remainingSeconds < TIMER_STOP) {
+			minutes = Math.ceil(this.remainingSeconds / MINUTES_TO_SECONDS);
 		}
 
 		let el = {
@@ -77,37 +82,61 @@ export default class Timer {
 	}
 
 	start() {
-		if (this.remainingSeconds === 0 || this.interval !== null) return;
+		if (this.remainingSeconds === TIMER_STOP || this.interval !== null) return;
 		let current = new Date();
-		// Date is given in milliseconds
-		let goal = +current + this.remainingSeconds * 1000;
+		let goal = +current + this.remainingSeconds * MILLISECONDS_TO_SECONDS;
 		this.updateEvent("pause");
 
 		this.interval = setInterval(() => {
 			current = new Date();
-			this.remainingSeconds = goal / 1000 - +current / 1000;
+			this.remainingSeconds = goal / MILLISECONDS_TO_SECONDS - +current / MILLISECONDS_TO_SECONDS;
 			this.remainingSeconds = Math.ceil(this.remainingSeconds);
 			this.updateInterfaceTime();
 
-			if (this.remainingSeconds === 0) {
+			if (this.remainingSeconds === TIMER_STOP) {
 				this.updateEvent("stop");
 				this.playSound();
 			}
 		}, 1000);
 	}
 	reset() {
-		if (confirm("reset timer?")) {
+		// if (confirm("reset timer?")) {
+		// 	this.stop();
+		// 	this.remainingSeconds = this.minutes * MINUTES_TO_SECONDS;
+		// 	this.container.classList.remove("sound");
+		// 	this.updateInterfaceTime();
+		// }
+		let template = document.createElement("template");
+		let mainContainer = document.getElementById("main");
+		let overlay = document.querySelector(".overlay");
+		overlay.style.display = "block";
+		this.confirmWindow = this.getConfirmWindow(this.label);
+		this.confirmWindow = this.confirmWindow.trim();
+		template.innerHTML = this.confirmWindow;
+		mainContainer.appendChild(template.content.firstChild);
+		this.confirmWindow = mainContainer.querySelector(".popup");
+		let setButton = mainContainer.querySelector(".popup__btn--confirm");
+		let cancelButton = mainContainer.querySelector(".popup__btn--cancel");
+
+		setButton.addEventListener("click", () => {
 			this.stop();
-			this.remainingSeconds = this.minutes * 60;
+			this.remainingSeconds = this.minutes * MINUTES_TO_SECONDS;
 			this.container.classList.remove("sound");
 			this.updateInterfaceTime();
-		}
+			this.confirmWindow.remove();
+			overlay.style.display = "none";
+		});
+		cancelButton.addEventListener("click", () => {
+			overlay.style.display = "none";
+			this.confirmWindow.remove();
+		})
+		overlay.addEventListener("click", () => {
+			overlay.style.display = "none";
+			this.confirmWindow.remove();
+		})
 	}
 
 	set() {
-		let input = document.querySelector(".set-timer");
-		if (input) return;
-
 		let template = document.createElement("template");
 		let mainContainer = document.getElementById("main");
 		let overlay = document.querySelector(".overlay");
@@ -130,10 +159,10 @@ export default class Timer {
 			).value;
 			if (!inputMinutes || !inputSeconds) return;
 			if (inputMinutes == 0 && inputSeconds == 0) return;
-			if (inputMinutes < 99) {
+			if (inputMinutes < MIN_TIMER) {
 				this.stop();
 				this.remainingSeconds =
-					parseInt(inputMinutes * 60) + parseInt(inputSeconds);
+					parseInt(inputMinutes * MINUTES_TO_SECONDS) + parseInt(inputSeconds);
 				this.updateInterfaceTime();
 			}
 			this.input.remove();
@@ -187,8 +216,8 @@ export default class Timer {
     <div class="popup"">
       <p class="popup__title">Do you want to reset timer ${label}?</p>
 			<div>
-      	<button class="popup__btn">yes</button>
-      	<button class="popup__btn">no</button>
+      	<button class="popup__btn popup__btn--confirm">yes</button>
+      	<button class="popup__btn popup__btn--cancel">no</button>
 			</div>
     </div>
     `;
