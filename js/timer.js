@@ -23,22 +23,22 @@ export default class Timer {
 		this.container.id = label;
 		this.container.classList.add("timer", "timer__container");
 		this.container.innerHTML = `
-			<div class="timer__part timer__part__container">
-				<span class="timer__part timer__part--label">${label}</span>
-				<span class="timer__part timer__part--minutes">${minutes}</span>
-				<span class="timer__part">:</span>
-				<span class="timer__part timer__part--seconds">00</span>
-			</div>
-			<button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_RESET}">
-				<span class="material-icons">restart_alt</span>
-			</button>
-			<button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_SET}">
-				<span class="material-icons">timer</span>
-			</button>
-			<button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_START}">
-				<span class="material-icons">play_arrow</span>
-			</button>
-		`;
+      <div class="timer__part timer__part__container">
+        <span class="timer__part timer__part--label">${label}</span>
+        <span class="timer__part timer__part--minutes">${minutes}</span>
+        <span class="timer__part">:</span>
+        <span class="timer__part timer__part--seconds">00</span>
+      </div>
+      <button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_RESET}">
+        <span class="material-icons">restart_alt</span>
+      </button>
+      <button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_SET}">
+        <span class="material-icons">timer</span>
+      </button>
+      <button class="timer__btn timer__btn--control ${CLASS_TIME_BUTTON_START}">
+        <span class="material-icons">play_arrow</span>
+      </button>
+    `;
 	}
 
 	getElementByClass(className) {
@@ -78,33 +78,30 @@ export default class Timer {
 
 	start() {
 		if (this.remainingSeconds === 0 || this.interval !== null) return;
+		let current = new Date();
+		// Date is given in milliseconds
+		let goal = +current + this.remainingSeconds * 1000;
 		this.updateEvent("pause");
 
 		this.interval = setInterval(() => {
-			this.remainingSeconds--;
+			current = new Date();
+			this.remainingSeconds = goal / 1000 - +current / 1000;
+			this.remainingSeconds = Math.ceil(this.remainingSeconds);
 			this.updateInterfaceTime();
 
 			if (this.remainingSeconds === 0) {
 				this.updateEvent("stop");
 				this.playSound();
-				// let template = document.createElement("template");
-				// let popUpHTML = this.getPopUp(this.label);
-				// let mainContainer = document.getElementById("main");
-				// popUpHTML = popUpHTML.trim();
-				// template.innerHTML = popUpHTML;
-				// mainContainer.appendChild(template.content.firstChild);
-				// this.popUp = mainContainer.querySelector(`#popup-${this.label}`);
-				// let stopButton = this.popUp.querySelector(".popup__btn");
-				// stopButton.addEventListener("click", () => {
-				// 	this.popUp.remove();
-				// 	this.stop();
-				// });
 			}
 		}, 1000);
 	}
 	reset() {
-		this.remainingSeconds = this.minutes * 60;
-		this.updateInterfaceTime();
+		if (confirm("reset timer?")) {
+			this.stop();
+			this.remainingSeconds = this.minutes * 60;
+			this.container.classList.remove("sound");
+			this.updateInterfaceTime();
+		}
 	}
 
 	set() {
@@ -112,13 +109,18 @@ export default class Timer {
 		if (input) return;
 
 		let template = document.createElement("template");
-		this.input = this.getInput(this.label);
 		let mainContainer = document.getElementById("main");
+		let overlay = document.querySelector(".overlay");
+		overlay.style.display = "block";
+		this.input = this.getInput(this.label);
 		this.input = this.input.trim();
 		template.innerHTML = this.input;
 		mainContainer.appendChild(template.content.firstChild);
 		this.input = mainContainer.querySelector(".set-timer");
-		let setButton = mainContainer.querySelector(".set-timer__btn");
+		let setButton = mainContainer.querySelector(".set-timer__btn--set");
+		let cancelButton = mainContainer.querySelector(".set-timer__btn--cancel");
+
+
 		setButton.addEventListener("click", () => {
 			let inputMinutes = this.input.querySelector(
 				".set-timer__input--minutes"
@@ -135,22 +137,30 @@ export default class Timer {
 				this.updateInterfaceTime();
 			}
 			this.input.remove();
+			overlay.style.display = "none";
 		});
+		cancelButton.addEventListener("click", () => {
+			overlay.style.display = "none";
+			this.input.remove();
+		})
+		overlay.addEventListener("click", () => {
+			overlay.style.display = "none";
+			this.input.remove();
+		})
 	}
 
 	stop() {
 		clearInterval(this.interval);
 		this.interval = null;
 		this.audio.pause();
-		this.container.classList.remove("sound");
 		this.updateEvent("play");
 	}
 
 	playSound() {
 		clearInterval(this.interval);
+		this.container.classList.add("sound");
 		this.interval = setInterval(() => {
 			this.audio.play();
-			this.container.classList.toggle("sound");
 		}, 1000);
 	}
 
@@ -172,27 +182,33 @@ export default class Timer {
 		return this.container;
 	}
 
-	getPopUp(label) {
+	getConfirmWindow(label) {
 		return `
-    <div class="popup" id="popup-${label}">
-      <p class="popup__title">Timer ${label} up!</p>
-      <button class="popup__btn">stop</button>
+    <div class="popup"">
+      <p class="popup__title">Do you want to reset timer ${label}?</p>
+			<div>
+      	<button class="popup__btn">yes</button>
+      	<button class="popup__btn">no</button>
+			</div>
     </div>
     `;
 	}
 
 	getInput(label) {
 		return `
-		<div class="popup set-timer">
-      <p class="set-timer__title">Set timer ${label}</p>
-			<form class="set-timer__form grid">
-      <label class="set-timer__label set-timer__label--minutes" >minutes: </label>
-      <input class="set-timer__input set-timer__input--minutes" type="number" />
-      <label class="set-timer__label set-timer__label--seconds" >seconds: </label>
-      <input class="set-timer__input set-timer__input--seconds" type="number" />
-			</form>
-      <button class="set-timer__btn">Set</button>
-    </div>
-		`;
+			<div class="popup set-timer">
+				<p class="set-timer__title">Set timer ${label}</p>
+				<form class="set-timer__form grid">
+				<label class="set-timer__label set-timer__label--minutes">minutes: </label>
+				<input class="set-timer__input set-timer__input--minutes" type="number" />
+				<label class="set-timer__label set-timer__label--seconds">seconds: </label>
+				<input class="set-timer__input set-timer__input--seconds" type="number" />
+				</form>
+				<div class="grid">
+					<button class="set-timer__btn set-timer__btn--set">Set</button>
+					<button class="set-timer__btn set-timer__btn--cancel">Cancel</button>
+				</div>
+			</div>
+    `;
 	}
 }
