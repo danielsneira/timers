@@ -89,7 +89,8 @@ export default class Timer {
 
 		this.interval = setInterval(() => {
 			current = new Date();
-			this.remainingSeconds = goal / MILLISECONDS_TO_SECONDS - +current / MILLISECONDS_TO_SECONDS;
+			this.remainingSeconds =
+				goal / MILLISECONDS_TO_SECONDS - +current / MILLISECONDS_TO_SECONDS;
 			this.remainingSeconds = Math.ceil(this.remainingSeconds);
 			this.updateInterfaceTime();
 
@@ -100,12 +101,6 @@ export default class Timer {
 		}, 1000);
 	}
 	reset() {
-		// if (confirm("reset timer?")) {
-		// 	this.stop();
-		// 	this.remainingSeconds = this.minutes * MINUTES_TO_SECONDS;
-		// 	this.container.classList.remove("sound");
-		// 	this.updateInterfaceTime();
-		// }
 		let template = document.createElement("template");
 		let mainContainer = document.getElementById("main");
 		let overlay = document.querySelector(".overlay");
@@ -129,11 +124,11 @@ export default class Timer {
 		cancelButton.addEventListener("click", () => {
 			overlay.style.display = "none";
 			this.confirmWindow.remove();
-		})
+		});
 		overlay.addEventListener("click", () => {
 			overlay.style.display = "none";
 			this.confirmWindow.remove();
-		})
+		});
 	}
 
 	set() {
@@ -148,7 +143,6 @@ export default class Timer {
 		this.input = mainContainer.querySelector(".set-timer");
 		let setButton = mainContainer.querySelector(".set-timer__btn--set");
 		let cancelButton = mainContainer.querySelector(".set-timer__btn--cancel");
-
 
 		setButton.addEventListener("click", () => {
 			let inputMinutes = this.input.querySelector(
@@ -171,11 +165,11 @@ export default class Timer {
 		cancelButton.addEventListener("click", () => {
 			overlay.style.display = "none";
 			this.input.remove();
-		})
+		});
 		overlay.addEventListener("click", () => {
 			overlay.style.display = "none";
 			this.input.remove();
-		})
+		});
 	}
 
 	stop() {
@@ -191,6 +185,7 @@ export default class Timer {
 		this.interval = setInterval(() => {
 			this.audio.play();
 		}, 1000);
+		this.notification();
 	}
 
 	updateEvent(event) {
@@ -239,5 +234,34 @@ export default class Timer {
 				</div>
 			</div>
     `;
+	}
+
+	notification() {
+		let permission = Notification.permission;
+
+		if (permission === "granted") {
+			this.showNotification();
+		} else if (permission === "default") {
+			this.requestAndShowPermission();
+		} else {
+			alert("Timer Up!");
+		}
+	}
+	showNotification() {
+		if (document.visibilityState === "visible") return;
+		
+		var body = "Message to be displayed";
+		var notification = new Notification("Timer Up!", { body });
+		notification.onclick = () => {
+			notification.close();
+			window.parent.focus();
+		};
+	}
+
+	requestAndShowPermission() {
+		Notification.requestPermission();
+		if (Notification.permission === "granted") {
+			this.showNotification();
+		}
 	}
 }
